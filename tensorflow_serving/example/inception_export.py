@@ -19,6 +19,7 @@
 
 import os.path
 import sys
+import math
 
 # This is a placeholder for a Google-internal import.
 
@@ -29,17 +30,45 @@ from inception import inception_model
 from tensorflow_serving.session_bundle import exporter
 
 
-tf.app.flags.DEFINE_string('checkpoint_dir', '/tmp/inception_train',
+tf.app.flags.DEFINE_string('checkpoint_dir', 'SnapModel/isPerson',
                            """Directory where to read training checkpoints.""")
 tf.app.flags.DEFINE_string('export_dir', '/tmp/inception_export',
                            """Directory where to export inference model.""")
-tf.app.flags.DEFINE_integer('image_size', 299,
+tf.app.flags.DEFINE_integer('image_size', 28,
                             """Needs to provide same value as in training.""")
 FLAGS = tf.app.flags.FLAGS
 
 
-NUM_CLASSES = 1000
-NUM_TOP_CLASSES = 5
+NUM_CLASSES = 2
+NUM_TOP_CLASSES = 1
+
+def inference_func(images, hidden_units):
+  IMAGE_PIXELS = FLAGS.image_size * FLAGS.image_size
+
+  # CREATE HIDDEN LAYERS AS DEFINED IN hidden_units
+  hidden = tf.reshape(images, [-1,FLAGS.image_size*FLAGS.image_size])
+  hidden_levels = len(hidden_units) - 1
+  for i in range(hidden_levels):
+    weights = tf.Variable(
+        tf.truncated_normal([hidden_units[i], hidden_units[i+1]],
+                            stddev=1.0 / math.sqrt(float(IMAGE_PIXELS))),
+        name='weights')
+    biases = tf.Variable(tf.zeros([hidden_units[i+1]]),
+                         name='biases')
+    print(hidden.get_shape())
+    print(weights.get_shape())
+    print(biases.get_shape())
+    hidden = tf.nn.relu(tf.matmul(hidden, weights) + biases)
+  # FINAL SOFTMAX LAYER
+  with tf.name_scope('softmax_linear'):
+    weights_softmax = tf.Variable(
+        tf.truncated_normal([hidden_units[hidden_levels], NUM_CLASSES],
+                            stddev=1.0 / math.sqrt(float(hidden_units[hidden_levels-1]))),
+        name='weights')
+    biases_softmax = tf.Variable(tf.zeros([NUM_CLASSES]),
+                         name='biases')
+    logits = tf.nn.softmax(tf.matmul(hidden, weights_softmax) + biases_softmax)
+  return logits
 
 
 def export():
@@ -55,7 +84,7 @@ def export():
     # Note that the resulting image contains an unknown height and width
     # that is set dynamically by decode_jpeg. In other words, the height
     # and width of image is unknown at compile-time.
-    image = tf.image.decode_jpeg(image_buffer, channels=3)
+    image = tf.image.decode_jpeg(image_buffer, channels=1)
     # After this point, all image pixels reside in [0,1)
     # until the very end, when they're rescaled to (-1, 1).  The various
     # adjust_* ops all require this range for dtype float.
@@ -75,16 +104,13 @@ def export():
     images = tf.expand_dims(image, 0)
 
     # Run inference.
-    logits, _ = inception_model.inference(images, NUM_CLASSES + 1)
+    logits = inference_func(images, [FLAGS.image_size*FLAGS.image_size,128, 32])
 
     # Transform output to topK result.
     values, indices = tf.nn.top_k(logits, NUM_TOP_CLASSES)
 
     # Restore variables from training checkpoint.
-    variable_averages = tf.train.ExponentialMovingAverage(
-        inception_model.MOVING_AVERAGE_DECAY)
-    variables_to_restore = variable_averages.variables_to_restore()
-    saver = tf.train.Saver(variables_to_restore)
+    saver = tf.train.Saver()
     with tf.Session() as sess:
       # Restore variables from training checkpoints.
       ckpt = tf.train.get_checkpoint_state(FLAGS.checkpoint_dir)
