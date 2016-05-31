@@ -34,7 +34,7 @@ tf.app.flags.DEFINE_string('checkpoint_dir', 'SnapModel/isPerson',
                            """Directory where to read training checkpoints.""")
 tf.app.flags.DEFINE_string('export_dir', '/tmp/inception_export',
                            """Directory where to export inference model.""")
-tf.app.flags.DEFINE_integer('image_size', 28,
+tf.app.flags.DEFINE_integer('image_size', 100,
                             """Needs to provide same value as in training.""")
 FLAGS = tf.app.flags.FLAGS
 
