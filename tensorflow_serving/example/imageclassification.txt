@@ -1,2 +1,2 @@
-n000000000	monkey
-n000000001	person
+n000000000	notmonkey
+n000000001	monkey

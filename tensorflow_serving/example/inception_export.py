@@ -40,7 +40,7 @@ FLAGS = tf.app.flags.FLAGS
 
 
 NUM_CLASSES = 2
-NUM_TOP_CLASSES = 1
+NUM_TOP_CLASSES = 2
 
 def inference_func(images, hidden_units):
   IMAGE_PIXELS = FLAGS.image_size * FLAGS.image_size

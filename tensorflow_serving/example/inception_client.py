@@ -37,7 +37,7 @@ tf.app.flags.DEFINE_string('image', '', 'path to image in JPEG format')
 FLAGS = tf.app.flags.FLAGS
 
 
-NUM_CLASSES = 1
+NUM_CLASSES = 2
 WORKING_DIR = os.path.dirname(os.path.realpath(__file__))
 SYNSET_FILE = os.path.join(WORKING_DIR, 'snapclassification.txt')
 METADATA_FILE = os.path.join(WORKING_DIR, 'imageclassification.txt')
