@@ -74,7 +74,7 @@ using tensorflow::string;
 using tensorflow::Tensor;
 using tensorflow::serving::ClassificationSignature;
 
-const int kNumTopClasses = 5;
+const int kNumTopClasses = 2;
 
 namespace {
 class InceptionServiceImpl;

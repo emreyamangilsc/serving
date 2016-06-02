@@ -19,7 +19,7 @@
         "containers": [
           {
             "name": "inception-container",
-            "image": "gcr.io/tensorflow-serving/inception",
+            "image": "gcr.io/snap-mind/inception",
             "command": [
               "/bin/sh",
               "-c"
