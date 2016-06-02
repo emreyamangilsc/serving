@@ -119,9 +119,9 @@ def export():
         # Assuming model_checkpoint_path looks something like:
         #   /my-favorite-path/imagenet_train/model.ckpt-0,
         # extract global_step from it.
-        global_step = ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]
+        #global_step = ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]
         print('Successfully loaded model from %s at step=%s.' %
-              (ckpt.model_checkpoint_path, global_step))
+              (ckpt.model_checkpoint_path, "00000001"))
       else:
         print('No checkpoint file found at %s' % FLAGS.checkpoint_dir)
         return
@@ -131,7 +131,7 @@ def export():
       signature = exporter.classification_signature(
           input_tensor=jpegs, classes_tensor=indices, scores_tensor=values)
       model_exporter.init(default_graph_signature=signature)
-      model_exporter.export(FLAGS.export_dir, tf.constant(global_step), sess)
+      model_exporter.export(FLAGS.export_dir, tf.constant("00000001"), sess)
       print('Successfully exported model to %s' % FLAGS.export_dir)
 
 
